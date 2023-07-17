@@ -1,5 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const prisma = new PrismaClient();
 const app = express();
@@ -34,7 +38,7 @@ app.get("/user/:id", async (req, res) => {
       lastActivity: true,
     },
   })
-    .then((user) => {
+    .then((user: any) => {
       if(!user) return res.status(404).send({
         ok: false,
         message: "User not found",
@@ -45,7 +49,7 @@ app.get("/user/:id", async (req, res) => {
         user
       });
     })
-    .catch((err) => {
+    .catch((err: any) => {
       res.status(500).send({
         ok: false,
         message: "Error while getting user",
@@ -73,14 +77,21 @@ app.post("/user", async (req, res) => {
         lastActivity: new Date(),
       },
     })
-    .then((user) => {
+    .then((user: any) => {
+      const token = jwt.sign(
+        {userId: String(user.id)},
+        String(process.env.JWT_SECRET || "ge9q!987gqg8re8grEg9fe1z93fae6ge9afEF2age6agpmfeaz5ef2"),
+        { expiresIn: '5y'}
+      );
+      console.log(token)
       res.status(201).send({
         ok: true,
         message: "User created",
         user: user,
+        token: token,
       });
     })
-    .catch((err) => {
+    .catch((err: any) => {
       res.status(500).send({
         ok: false,
         message: "Error while creating user",
