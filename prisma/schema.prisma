@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  pseudo       String    @unique
+  firstName    String
+  email        String    @unique
+  status       String
+  comments     String?
+  createdAt    DateTime  @default(now())
+  lastActivity DateTime?
+
+  logs ActionsLog[]
+}
+
+model ActionsLog {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  game       Game     @relation(fields: [gameId], references: [id])
+  userId     Int
+  gameId     Int
+  actionType String
+  createdAt  DateTime @default(now())
+}
+
+model Game {
+  id          Int    @id @default(autoincrement())
+  name        String
+  installPath String
+  executable  String
+  version     String
+  size        Int
+
+  props GameProps?
+  logs  ActionsLog[]
+}
+
+model GameProps {
+  id            Int    @id @default(autoincrement())
+  name          String
+  description   String
+  verticalIcon  String
+  background    String
+  altBackground String
+
+  game   Game? @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId Int?  @unique
+}
