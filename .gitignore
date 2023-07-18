@@ -1,3 +1,11 @@
 node_modules/
 dist/
 *.env*
+
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+.idea/
+.idea/*
+prisma/dev.db
