@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {createToken} from "./secrets";
+import { createToken } from "./secrets";
 
 const prisma = new PrismaClient();
 
@@ -13,39 +13,47 @@ app.all("/", (req, res) => {
   res.send("Welcome to the Griff's API");
 });
 
-app.get("/user/:id", async (req, res) => {
+const router = express.Router();
+router.use(() => {});
+app.use("/api", router);
+
+router.get("/user/:id", async (req, res) => {
   const { id } = req.params;
   console.log(id);
-  if(!id) return res.status(400).send({
-    ok: false,
-    message: "Missing parameters",
-  });
+  if (!id)
+    return res.status(400).send({
+      ok: false,
+      message: "Missing parameters",
+    });
 
   const userId = parseInt(id);
-  if(!userId) return res.status(400).send({
-    ok: false,
-    message: "Invalid parameters",
-  });
+  if (!userId)
+    return res.status(400).send({
+      ok: false,
+      message: "Invalid parameters",
+    });
 
-  await prisma.user.findUnique({
-    where: {
-      id: userId
-    },
-    select: {
-      pseudo: true,
-      firstName: true,
-      lastActivity: true,
-    },
-  })
+  await prisma.user
+    .findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        pseudo: true,
+        firstName: true,
+        lastActivity: true,
+      },
+    })
     .then((user: any) => {
-      if(!user) return res.status(404).send({
-        ok: false,
-        message: "User not found",
-      });
+      if (!user)
+        return res.status(404).send({
+          ok: false,
+          message: "User not found",
+        });
       return res.status(200).send({
         ok: true,
         message: "User found",
-        user
+        user,
       });
     })
     .catch((err: any) => {
@@ -57,7 +65,7 @@ app.get("/user/:id", async (req, res) => {
     });
 });
 
-app.post("/user", async (req, res) => {
+router.post("/user", async (req, res) => {
   const { pseudo, firstName, email, password } = req.body;
 
   if (!pseudo || !firstName || !email || !password)
@@ -78,8 +86,8 @@ app.post("/user", async (req, res) => {
       },
     })
     .then((user: any) => {
-      const token = createToken(user.id)
-      console.log(token)
+      const token = createToken(user.id);
+      console.log(token);
       res.status(201).send({
         ok: true,
         message: "User created",
@@ -95,6 +103,8 @@ app.post("/user", async (req, res) => {
       });
     });
 });
+
+router.post("/login", async (req, res) => {});
 
 const server = app.listen(3000, () =>
   console.log(`
