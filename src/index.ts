@@ -2,11 +2,11 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import {createToken} from "./secrets";
 
 const prisma = new PrismaClient();
-const app = express();
 
+const app = express();
 app.use(express.json());
 
 app.all("/", (req, res) => {
@@ -78,11 +78,7 @@ app.post("/user", async (req, res) => {
       },
     })
     .then((user: any) => {
-      const token = jwt.sign(
-        {userId: String(user.id)},
-        String(process.env.JWT_SECRET || "ge9q!987gqg8re8grEg9fe1z93fae6ge9afEF2age6agpmfeaz5ef2"),
-        { expiresIn: '5y'}
-      );
+      const token = createToken(user.id)
       console.log(token)
       res.status(201).send({
         ok: true,
