@@ -12,6 +12,7 @@ model User {
   pseudo       String    @unique
   firstName    String
   email        String    @unique
+  password     String
   status       String
   comments     String?
   createdAt    DateTime  @default(now())

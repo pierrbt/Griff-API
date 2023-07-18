@@ -1,9 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
-dotenv.config();
 
 const prisma = new PrismaClient();
 const app = express();
@@ -59,9 +58,9 @@ app.get("/user/:id", async (req, res) => {
 });
 
 app.post("/user", async (req, res) => {
-  const { pseudo, firstName, email } = req.body;
+  const { pseudo, firstName, email, password } = req.body;
 
-  if (!pseudo || !firstName || !email)
+  if (!pseudo || !firstName || !email || !password)
     return res.status(400).send({
       ok: false,
       message: "Missing parameters : (pseudo, firstName, email) required",
@@ -72,6 +71,7 @@ app.post("/user", async (req, res) => {
       data: {
         pseudo,
         firstName,
+        password: await bcrypt.hash(password, 10),
         email,
         status: "active",
         lastActivity: new Date(),
