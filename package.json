@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "format": "prettier --write --end-of-line=auto \"src/**/*\" "
   },
   "dependencies": {
     "@prisma/client": "5.0.0",
