@@ -1,8 +1,4 @@
-// TODO: Remove possibility to change multiple things at a time, and send new user info
-// TODO: Add a route to delete user
 // TODO: Start making the games routes
-
-
 
 import { PrismaClient } from "@prisma/client";
 import express from "express";
@@ -18,7 +14,6 @@ app.all("/", (req, res) => {
 });
 app.get("/user/:id", async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   if (!id)
     return res.status(400).send({
       ok: false,
@@ -86,7 +81,6 @@ app.post("/user", async (req, res) => {
     })
     .then((user: any) => {
       const token = createToken(user.id);
-      console.log(token);
       res.status(201).send({
         ok: true,
         message: "User created",
@@ -210,9 +204,7 @@ app.put("/user", async (req, res) => {
           error: err,
         });
       });
-  }
-
-  if (firstName) {
+  } else if (firstName) {
     await prisma.user
       .update({
         where: {
@@ -236,9 +228,7 @@ app.put("/user", async (req, res) => {
           error: err,
         });
       });
-  }
-
-  if (password) {
+  } else if (password) {
     await prisma.user
       .update({
         where: {
@@ -262,7 +252,60 @@ app.put("/user", async (req, res) => {
           error: err,
         });
       });
+  } else {
+    return res.status(400).send({
+      ok: false,
+      message: "Missing parameters : (pseudo, firstName, password) required",
+    });
   }
+});
+
+app.delete("/user", async (req, res) => {
+  let token = req.headers.authorization;
+  // read the bearer token
+  if (!token) {
+    return res.status(401).send({
+      ok: false,
+      message: "Missing token",
+    });
+  }
+
+  if (token.startsWith("Bearer ")) {
+    token = token.slice(7, token.length);
+  } else {
+    return res.status(401).send({
+      ok: false,
+      message: "Invalid token",
+    });
+  }
+
+  const userId = await verifyToken(token);
+  if (!userId) {
+    return res.status(401).send({
+      ok: false,
+      message: "Invalid token",
+    });
+  }
+
+  await prisma.user
+    .delete({
+      where: {
+        id: userId,
+      },
+    })
+    .then(() => {
+      res.status(200).send({
+        ok: true,
+        message: "User deleted",
+      });
+    })
+    .catch((err: any) => {
+      res.status(500).send({
+        ok: false,
+        message: "Error while deleting user",
+        error: err,
+      });
+    });
 });
 
 const server = app.listen(3000, () =>
