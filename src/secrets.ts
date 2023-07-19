@@ -20,3 +20,20 @@ export function verifyToken(token: string): Promise<number> {
     });
   });
 }
+
+export async function checkAndVerifyToken(token: string | undefined): Promise<number> {
+  if (!token) {
+    return 0;
+  }
+  if (token.startsWith("Bearer ")) {
+    token = token.slice(7, token.length);
+  } else {
+    return 0;
+  }
+
+  if (!token) {
+    return 0;
+  }
+
+  return await verifyToken(token);
+}

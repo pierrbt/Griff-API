@@ -3,7 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
-import { createToken, verifyToken } from "./secrets";
+import {checkAndVerifyToken, createToken, verifyToken} from "./secrets";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -13,6 +13,14 @@ app.all("/", (req, res) => {
   res.send("Welcome to the Griff's API");
 });
 app.get("/user/:id", async (req, res) => {
+  const token = req.headers.authorization;
+  const authId = await checkAndVerifyToken(token);
+  if (!authId) {
+    return res.status(401).send({
+      ok: false,
+      message: "Invalid token",
+    });
+  }
   const { id } = req.params;
   if (!id)
     return res.status(400).send({
@@ -145,33 +153,14 @@ app.post("/login", async (req, res) => {
 app.put("/user", async (req, res) => {
   // The user can only update his pseudo, firstName and password
   // First check the JWT token sent in Authorization header with Bearer method
-  let token = req.headers.authorization;
-  // read the bearer token
-  if (!token) {
-    return res.status(401).send({
-      ok: false,
-      message: "Missing token",
-    });
-  }
-  if (token.startsWith("Bearer ")) {
-    token = token.slice(7, token.length);
-  }
-
-  if (!token) {
-    return res.status(401).send({
-      ok: false,
-      message: "Invalid token",
-    });
-  }
-
-  const userId = await verifyToken(token);
+  const token = req.headers.authorization;
+  const userId = await checkAndVerifyToken(token);
   if (!userId) {
     return res.status(401).send({
       ok: false,
       message: "Invalid token",
     });
   }
-
   // switch whether the user wants to update his pseudo, firstName or password
   const { pseudo, firstName, password } = req.body;
   if (!pseudo && !firstName && !password)
@@ -261,25 +250,8 @@ app.put("/user", async (req, res) => {
 });
 
 app.delete("/user", async (req, res) => {
-  let token = req.headers.authorization;
-  // read the bearer token
-  if (!token) {
-    return res.status(401).send({
-      ok: false,
-      message: "Missing token",
-    });
-  }
-
-  if (token.startsWith("Bearer ")) {
-    token = token.slice(7, token.length);
-  } else {
-    return res.status(401).send({
-      ok: false,
-      message: "Invalid token",
-    });
-  }
-
-  const userId = await verifyToken(token);
+  const token = req.headers.authorization;
+  const userId = await checkAndVerifyToken(token);
   if (!userId) {
     return res.status(401).send({
       ok: false,
@@ -307,6 +279,65 @@ app.delete("/user", async (req, res) => {
       });
     });
 });
+
+
+app.get("/game/:id", async (req, res) => {
+  const token = req.headers.authorization;
+  const userId = await checkAndVerifyToken(token);
+  if (!userId) {
+    return res.status(401).send({
+      ok: false,
+      message: "Invalid token",
+    });
+  }
+
+  const { id } = req.params;
+  if (!id)
+  {
+    return res.status(400).send({
+      ok: false,
+      message: "Missing parameters : (gameId) required",
+    });
+  }
+
+  const gameId = parseInt(id);
+  if(!gameId)
+  {
+    return res.status(400).send({
+      ok: false,
+      message: "Invalid gameId",
+    });
+  }
+
+  await prisma.game.findUnique({
+    where: {
+      id: gameId,
+    }
+  })
+  .then((game: any) => {
+    if(!game)
+      return res.status(404).send({
+        ok: false,
+        message: "Game not found",
+
+      });
+    return res.status(200).send({
+      ok: true,
+      message: "Game found",
+      game: game,
+    });
+  })
+  .catch((err: any) => {
+    return res.status(500).send({
+      ok: false,
+      message: "Error while getting game",
+    });
+  })
+
+});
+
+
+
 
 const server = app.listen(3000, () =>
   console.log(`
