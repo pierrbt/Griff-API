@@ -1,3 +1,9 @@
+// TODO: Remove possibility to change multiple things at a time, and send new user info
+// TODO: Add a route to delete user
+// TODO: Start making the games routes
+
+
+
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
