@@ -13,15 +13,21 @@ export function createToken(id: number): string {
 
 export function verifyToken(token: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
-      if (err) return reject(err);
-      if (decoded.id) resolve(decoded.id);
-      else reject(0);
-    });
+    try {
+      jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
+        if (err) return reject(err);
+        if (decoded.id) resolve(decoded.id);
+        else reject(0);
+      });
+    } catch (err: any) {
+      reject(err);
+    }
   });
 }
 
-export async function checkAndVerifyToken(token: string | undefined): Promise<number> {
+export async function checkAndVerifyToken(
+  token: string | undefined,
+): Promise<number> {
   if (!token) {
     return 0;
   }
@@ -35,5 +41,11 @@ export async function checkAndVerifyToken(token: string | undefined): Promise<nu
     return 0;
   }
 
-  return await verifyToken(token);
+  return await verifyToken(token)
+    .then((id: number) => {
+      return id;
+    })
+    .catch((err: any) => {
+      return 0;
+    });
 }
