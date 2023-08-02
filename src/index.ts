@@ -5,6 +5,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import {checkAndVerifyToken, createToken, verifyToken} from "./secrets";
 import cors from "cors";
+import { checkAndVerifyToken, createToken, verifyToken } from "./secrets";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -78,12 +79,15 @@ app.post("/user", async (req, res) => {
         "Missing parameters : (pseudo, firstName, email, password) required",
     });
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+  console.log(hashedPassword);
+
   await prisma.user
     .create({
       data: {
         pseudo,
         firstName,
-        password: await bcrypt.hash(password, 10),
+        password: hashedPassword,
         email,
         status: "active",
         lastActivity: new Date(),
@@ -294,8 +298,7 @@ app.get("/game/:id", async (req, res) => {
   }
 
   const { id } = req.params;
-  if (!id)
-  {
+  if (!id) {
     return res.status(400).send({
       ok: false,
       message: "Missing parameters : (gameId) required",
@@ -303,36 +306,36 @@ app.get("/game/:id", async (req, res) => {
   }
 
   const gameId = parseInt(id);
-  if(!gameId)
-  {
+  if (!gameId) {
     return res.status(400).send({
       ok: false,
       message: "Invalid gameId",
     });
   }
 
-  await prisma.game.findUnique({
-    where: {
-      id: gameId,
-    }
-  })
-  .then((game: any) => {
-    if(!game)
-      return res.status(404).send({
-        ok: false,
-        message: "Game not found",
-
+  await prisma.game
+    .findUnique({
+      where: {
+        id: gameId,
+      },
+    })
+    .then((game: any) => {
+      if (!game)
+        return res.status(404).send({
+          ok: false,
+          message: "Game not found",
+        });
+      return res.status(200).send({
+        ok: true,
+        message: "Game found",
+        game: game,
       });
-    return res.status(200).send({
-      ok: true,
-      message: "Game found",
-      game: game,
-    });
-  })
-  .catch((err: any) => {
-    return res.status(500).send({
-      ok: false,
-      message: "Error while getting game",
+    })
+    .catch((err: any) => {
+      return res.status(500).send({
+        ok: false,
+        message: "Error while getting game",
+      });
     });
   })
 
