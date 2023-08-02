@@ -4,10 +4,12 @@ import { PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
 import {checkAndVerifyToken, createToken, verifyToken} from "./secrets";
+import cors from "cors";
 
 const app = express();
 const prisma = new PrismaClient();
 app.use(express.json());
+app.use(cors());
 
 app.all("/", (req, res) => {
   res.send("Welcome to the Griff's API");
