@@ -3,9 +3,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import bcrypt from "bcrypt";
-import {checkAndVerifyToken, createToken, verifyToken} from "./secrets";
+import { checkAndVerifyToken, createToken } from "./secrets";
 import cors from "cors";
-import { checkAndVerifyToken, createToken, verifyToken } from "./secrets";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -111,9 +110,9 @@ app.post("/user", async (req, res) => {
     });
 });
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { pseudo, password } = req.body;
 
-  if (!email || !password)
+  if (!pseudo || !password)
     return res.status(400).send({
       ok: false,
       message: "Missing parameters : (email, password) required",
@@ -122,7 +121,7 @@ app.post("/login", async (req, res) => {
   await prisma.user
     .findUnique({
       where: {
-        email,
+        pseudo,
       },
     })
     .then(async (user: any) => {
@@ -286,6 +285,44 @@ app.delete("/user", async (req, res) => {
     });
 });
 
+app.post("/user/verify", async (req, res) => {
+  const token = req.headers.authorization;
+  const userId = await checkAndVerifyToken(token);
+  if (!userId) {
+    return res.status(401).send({
+      ok: false,
+      message: "Invalid token",
+    });
+  }
+
+  return await prisma.user
+    .findUnique({
+      where: {
+        id: userId,
+        status: "active",
+      },
+    })
+    .then((user: any) => {
+      if (!user)
+        return res.status(404).send({
+          ok: false,
+          message: "User not found",
+        });
+
+      return res.status(200).send({
+        ok: true,
+        message: "User verified",
+        user: user,
+      });
+    })
+    .catch((err: any) => {
+      return res.status(500).send({
+        ok: false,
+        message: "Error while verifying user",
+        error: err,
+      });
+    });
+});
 
 app.get("/game/:id", async (req, res) => {
   const token = req.headers.authorization;
@@ -337,12 +374,7 @@ app.get("/game/:id", async (req, res) => {
         message: "Error while getting game",
       });
     });
-  })
-
 });
-
-
-
 
 const server = app.listen(3000, () =>
   console.log(`
