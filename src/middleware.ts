@@ -10,13 +10,22 @@ export async function authToken(
   next: NextFunction,
 ) {
   const token = req.headers.authorization;
-  const authId = await checkAndVerifyToken(token);
+  const [authId, message] = await checkAndVerifyToken(token);
   if (!authId) {
     return res.status(401).send({
       ok: false,
-      message: "Invalid token",
+      message: `Auth failed, ${message}`,
     });
   }
+
+  prisma.user.update({
+    where: {
+      id: authId,
+    },
+    data: {
+      lastActivity: new Date(),
+    }
+  })
 
   res.locals.userId = authId;
   next();

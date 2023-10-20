@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { confirm } from '@inquirer/prompts';
 import crypto from "crypto";
 import {writeFile} from "fs/promises";
+import {prisma} from "./middleware";
 
 dotenv.config();
 
@@ -42,7 +43,7 @@ export function createToken(id: number): string {
 
 export async function checkAndVerifyToken(
   token: string | undefined,
-): Promise<number> {
+): Promise<[number, string]> {
   try {
     if (!token || typeof token !== "string" || !token.startsWith("Bearer ")) {
       throw new Error("Invalid token format");
@@ -52,12 +53,26 @@ export async function checkAndVerifyToken(
     const decoded: any = jwt.verify(cleanedToken, jwtSecret);
 
     if (decoded && decoded.id && typeof decoded.id === "number") {
-      return decoded.id;
+      return await prisma.user.findUnique({
+        where: {
+          id: decoded.id,
+          status: "active",
+        }
+      })
+        .then((user: any) => {
+          if (!user)
+            throw new Error("User has been deleted or banned");
+          return [decoded.id, "User is valid"];
+        })
+        .catch((error: any) => {
+          console.log(`[ERROR] error while verifying token: ${error.message}`);
+          return [0, error.message];
+        }) as [number, string];
     } else {
       throw new Error("Invalid token content");
     }
   } catch (error: any) {
     console.log(`[ERROR] error while verifying token: ${error.message}`);
-    return 0;
+    return [0, error.message];
   }
 }

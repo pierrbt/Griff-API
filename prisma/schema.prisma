@@ -17,19 +17,20 @@ model User {
   comments     String?
   createdAt    DateTime  @default(now())
   lastActivity DateTime?
+  admin        Boolean   @default(false)
 
-  logs ActionsLog[]
+  // logs ActionsLog[]
 }
 
-model ActionsLog {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
-  game       Game     @relation(fields: [gameId], references: [id])
-  userId     Int
-  gameId     Int
-  actionType String
-  createdAt  DateTime @default(now())
-}
+// model ActionsLog {
+//   id         Int      @id @default(autoincrement())
+//   user       User     @relation(fields: [userId], references: [id])
+//   game       Game     @relation(fields: [gameId], references: [id])
+//   userId     Int
+//   gameId     Int
+//   actionType String
+//   createdAt  DateTime @default(now())
+// }
 
 model Game {
   id          Int    @id @default(autoincrement())
@@ -40,7 +41,7 @@ model Game {
   size        Int
 
   props GameProps?
-  logs  ActionsLog[]
+  // logs  ActionsLog[]
 }
 
 model GameProps {
