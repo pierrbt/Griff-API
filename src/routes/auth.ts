@@ -1,11 +1,9 @@
-import {Express} from "express";
+import { Express } from "express";
 import bcrypt from "bcrypt";
-import {createToken} from "../tokens";
-import {prisma, authToken} from "../middleware";
+import { createToken } from "../tokens";
+import { prisma, authToken } from "../middleware";
 
-export default function declareAuthRoutes(app: Express)
-{
-
+export default function declareAuthRoutes(app: Express) {
   app.post("/login", async (req, res) => {
     const { pseudo, password } = req.body;
 
@@ -52,8 +50,6 @@ export default function declareAuthRoutes(app: Express)
         });
       });
   });
-
-
 
   app.post("/user/verify", authToken, async (req, res) => {
     const userId = res.locals.userId;

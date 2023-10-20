@@ -1,10 +1,9 @@
-import {Express} from "express";
+import { Express } from "express";
 import bcrypt from "bcrypt";
-import {createToken} from "../tokens";
-import {prisma, authToken} from "../middleware";
+import { createToken } from "../tokens";
+import { prisma, authToken } from "../middleware";
 
-export default function declareUserRoutes(app: Express)
-{
+export default function declareUserRoutes(app: Express) {
   app.get("/user/:id", authToken, async (req, res) => {
     const { id } = req.params;
     if (!id)

@@ -1,8 +1,7 @@
-import {Express} from "express";
-import {prisma, authToken} from "../middleware";
+import { Express } from "express";
+import { prisma, authToken } from "../middleware";
 
-export default function declareGamesRoutes(app: Express)
-{
+export default function declareGamesRoutes(app: Express) {
   app.get("/game/:id", authToken, async (req, res) => {
     const { id } = req.params;
     if (!id) {

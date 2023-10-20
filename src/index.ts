@@ -11,12 +11,14 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(rateLimit({
-  windowMs: 60 * 1000,
-  limit: 240,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false
-}))
+app.use(
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: 240,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+  }),
+);
 
 declareAuthRoutes(app);
 declareUserRoutes(app);

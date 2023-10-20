@@ -20,19 +20,21 @@ export function createToken(id: number): string {
   );
 }
 
-export async function checkAndVerifyToken(token: string | undefined): Promise<number> {
+export async function checkAndVerifyToken(
+  token: string | undefined,
+): Promise<number> {
   try {
-    if (!token || typeof token !== 'string' || !token.startsWith('Bearer ')) {
-      throw new Error('Invalid token format');
+    if (!token || typeof token !== "string" || !token.startsWith("Bearer ")) {
+      throw new Error("Invalid token format");
     }
 
     const cleanedToken = token.slice(7);
     const decoded: any = jwt.verify(cleanedToken, jwtSecret);
 
-    if (decoded && decoded.id && typeof decoded.id === 'number') {
+    if (decoded && decoded.id && typeof decoded.id === "number") {
       return decoded.id;
     } else {
-      throw new Error('Invalid token content');
+      throw new Error("Invalid token content");
     }
   } catch (error: any) {
     console.log(`[ERROR] error while verifying token: ${error.message}`);
