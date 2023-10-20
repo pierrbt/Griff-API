@@ -4,12 +4,19 @@ import declareUserRoutes from "./routes/user";
 import declareGamesRoutes from "./routes/games";
 import helmet from "helmet";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  limit: 240,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false
+}))
 
 declareAuthRoutes(app);
 declareUserRoutes(app);
