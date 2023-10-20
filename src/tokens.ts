@@ -1,14 +1,34 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { confirm } from '@inquirer/prompts';
+import crypto from "crypto";
+import {writeFile} from "fs/promises";
 
 dotenv.config();
 
+let jwtSecret = process.env.TOKEN_SECRET as string;
+
 if (!process.env.TOKEN_SECRET) {
-  console.error("ERROR: No token secret provided (.env file, TOKEN_SECRET)");
-  process.exit(1);
+  console.error("[ERROR]: No token secret provided (.env file, TOKEN_SECRET)");
+  confirm({
+    message: 'Do you want to generate a new token secret or want to do it yourself?',
+  }).then(async (answer: boolean) => {
+    if(!answer)
+      process.exit(1);
+    const secret = crypto.randomBytes(128).toString('hex');
+    console.log(`Generated secret: ${secret.slice(0, 20)}...`);
+    await writeFile('.env', `TOKEN_SECRET=${secret}`);
+    console.log('Secret saved to .env file');
+    process.env.TOKEN_SECRET = secret;
+    jwtSecret = secret;
+  })
+    .catch((error: any) => {
+      console.error(error);
+      process.exit(1);
+  });
 }
 
-const jwtSecret = process.env.TOKEN_SECRET;
+
 
 export function createToken(id: number): string {
   return jwt.sign(

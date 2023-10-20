@@ -5,8 +5,11 @@ import declareGamesRoutes from "./routes/games";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -20,6 +23,10 @@ app.use(
   }),
 );
 
+console.log(`[INFO] Welcome on the Griff's API`)
+console.log(`[INFO] You can define a custom port by setting the PORT environment variable`)
+console.log(`[INFO] You can define a custom token secret by setting the TOKEN_SECRET environment variable\n`)
+
 declareAuthRoutes(app);
 declareUserRoutes(app);
 declareGamesRoutes(app);
@@ -28,7 +35,7 @@ app.all("/", (req, res) => {
   res.send("Welcome to the Griff's API");
 });
 
-app.listen(3000, () =>
-  console.log(`
-🚀 Server ready at: http://localhost:3000`),
-);
+
+app.listen(port, function() {
+  console.log(`[INFO] 🚀 Server is listening on port ${port}`);
+})

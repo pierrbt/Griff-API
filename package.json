@@ -4,9 +4,14 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node src/index.ts",
-    "format": "prettier --write --end-of-line=auto \"src/**/*\" "
+    "format": "prettier --write --end-of-line=auto \"src/**/*\" ",
+    "build": "tsc -p .",
+    "setup": "npx prisma generate",
+    "serve": "node dist/index.js",
+    "start": "npm run build && npm run serve"
   },
   "dependencies": {
+    "@inquirer/prompts": "^3.2.0",
     "@prisma/client": "5.0.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
@@ -19,7 +24,11 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.13",
+    "@types/dotenv": "^8.2.0",
     "@types/express": "4.17.17",
+    "@types/express-rate-limit": "^6.0.0",
+    "@types/helmet": "^4.0.0",
+    "@types/inquirer": "^9.0.6",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "18.16.19",
     "prettier": "^3.0.0",

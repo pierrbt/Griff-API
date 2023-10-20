@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
     "outDir": "dist",
+    "alwaysStrict": true,
+    "module": "nodenext",
+    "inlineSourceMap": false,
+    "pretty": true,
     "strict": true,
     "lib": ["esnext"],
     "esModuleInterop": true,
+    "removeComments": true,
+
   }
 }
