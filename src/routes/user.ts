@@ -2,32 +2,16 @@ import { Express } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../tokens";
 import { prisma, authToken } from "../middleware";
-import { z } from "zod";
-
-const userId = z.coerce.number().positive("User id must be positive").int();
-const createUserObject = z.object({
-  pseudo: z.string().min(3, "Pseudo must be at least 3 characters long"),
-  firstName: z.string().min(3, "First name must be at least 3 characters long"),
-  email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-const updateUserObject = z
-  .object({
-    pseudo: z.string().min(3, "Pseudo must be at least 3 characters long"),
-    firstName: z
-      .string()
-      .min(3, "First name must be at least 3 characters long"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
-  })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one parameter is required",
-  });
+import {
+  createUserObject,
+  updateUserObject,
+  userIdParameter,
+} from "../validators/user.validator";
 
 export default function declareUserRoutes(app: Express) {
   app.get("/user/:id", authToken, async (req, res) => {
     try {
-      const parsed = userId.safeParse(req.params.id);
+      const parsed = userIdParameter.safeParse(req.params.id);
       if (!parsed.success) {
         throw {
           status: 400,
