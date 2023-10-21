@@ -148,47 +148,47 @@ export function declareAdminRoutes(app: Express) {
     }
   });
 
-  app.put("/user/pseudo/:id", authAdmin, async (req, res) => {
-    try {
-      const parsed = banUserId.safeParse(req.params.id);
-      if (!parsed.success) {
-        throw {
-          status: 400,
-          message: "Invalid parameters " + parsed.error.message,
-        };
-      }
-
-      const id = parsed.data;
-      const parsed2 = newPseudo.safeParse(req.body.pseudo);
-      if (!parsed2.success) {
-        throw {
-          status: 400,
-          message: "Invalid parameters " + parsed2.error.message,
-        };
-      }
-
-      const pseudo = parsed2.data;
-
-      await prisma.user.update({
-        where: {
-          id: id,
-        },
-        data: {
-          pseudo: pseudo,
-        },
-      });
-
-      res.status(200).send({
-        ok: true,
-        message: "User pseudo updated",
-      });
-    } catch (error: any) {
-      const status = error.status || 500;
-      const message = error.message || "Error while updating user pseudo";
-      res.status(status).send({
-        ok: false,
-        message: message,
-      });
-    }
-  });
+  // app.put("/users/pseudo/:id", authAdmin, async (req, res) => {
+  //   try {
+  //     const parsed = banUserId.safeParse(req.params.id);
+  //     if (!parsed.success) {
+  //       throw {
+  //         status: 400,
+  //         message: "Invalid parameters " + parsed.error.message,
+  //       };
+  //     }
+  //
+  //     const id = parsed.data;
+  //     const parsed2 = newPseudo.safeParse(req.body.pseudo);
+  //     if (!parsed2.success) {
+  //       throw {
+  //         status: 400,
+  //         message: "Invalid parameters " + parsed2.error.message,
+  //       };
+  //     }
+  //
+  //     const pseudo = parsed2.data;
+  //
+  //     await prisma.user.update({
+  //       where: {
+  //         id: id,
+  //       },
+  //       data: {
+  //         pseudo: pseudo,
+  //       },
+  //     });
+  //
+  //     res.status(200).send({
+  //       ok: true,
+  //       message: "User pseudo updated",
+  //     });
+  //   } catch (error: any) {
+  //     const status = error.status || 500;
+  //     const message = error.message || "Error while updating user pseudo";
+  //     res.status(status).send({
+  //       ok: false,
+  //       message: message,
+  //     });
+  //   }
+  // });
 }

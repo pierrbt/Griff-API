@@ -9,7 +9,7 @@ import {
 } from "../validators/user.validator";
 
 export default function declareUserRoutes(app: Express) {
-  app.get("/user/:id", authToken, async (req, res) => {
+  app.get("/users/:id", authToken, async (req, res) => {
     try {
       const parsed = userIdParameter.safeParse(req.params.id);
       if (!parsed.success) {
@@ -54,7 +54,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.post("/user", async (req, res) => {
+  app.post("/users", async (req, res) => {
     try {
       const parsed = createUserObject.safeParse(req.body);
       if (!parsed.success) {
@@ -98,7 +98,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.put("/user", authToken, async (req, res) => {
+  app.put("/users", authToken, async (req, res) => {
     try {
       const userId = res.locals.userId;
       const parsed = updateUserObject.safeParse(req.body);
@@ -150,7 +150,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.delete("/user", authToken, async (req, res) => {
+  app.delete("/users", authToken, async (req, res) => {
     const userId = res.locals.userId;
 
     await prisma.user
