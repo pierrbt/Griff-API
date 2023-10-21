@@ -8,7 +8,7 @@ import {
 export default function declareGamesRoutes(app: Express) {
   app.get("/games", authToken, async (req, res) => {
     try {
-      const games = await prisma.game.findMany();
+      const games = await prisma.game.findMany({include: {props: true}});
       if (!games) {
         throw {
           status: 404,
@@ -46,6 +46,7 @@ export default function declareGamesRoutes(app: Express) {
         where: {
           id: id,
         },
+        include: {props: true}
       });
 
       if (!game) {

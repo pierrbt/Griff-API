@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import declareAuthRoutes from "./routes/auth";
 import declareUserRoutes from "./routes/user";
 import declareGamesRoutes from "./routes/games";
+import declareAdminRoutes from "./routes/admin";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
@@ -36,6 +37,7 @@ console.log(
 declareAuthRoutes(app);
 declareUserRoutes(app);
 declareGamesRoutes(app);
+declareAdminRoutes(app);
 
 app.all("/", (req, res) => {
   res.send({

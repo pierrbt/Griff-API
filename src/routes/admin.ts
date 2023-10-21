@@ -7,7 +7,7 @@ const newPseudo = z
   .string()
   .min(3, "Pseudo must be at least 3 characters long");
 
-export function declareAdminRoutes(app: Express) {
+export default function declareAdminRoutes(app: Express) {
   app.post("/ban/:id", authAdmin, async (req, res) => {
     try {
       const parsed = banUserId.safeParse(req.params.id);
