@@ -2,70 +2,86 @@ import { Express } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../tokens";
 import { prisma, authToken } from "../middleware";
+import { z } from "zod";
+
+const userId = z.coerce.number().positive("User id must be positive").int();
+const createUserObject = z.object({
+  pseudo: z.string().min(3, "Pseudo must be at least 3 characters long"),
+  firstName: z.string().min(3, "First name must be at least 3 characters long"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+const updateUserObject = z
+  .object({
+    pseudo: z.string().min(3, "Pseudo must be at least 3 characters long"),
+    firstName: z
+      .string()
+      .min(3, "First name must be at least 3 characters long"),
+    password: z.string().min(8, "Password must be at least 8 characters long"),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one parameter is required",
+  });
 
 export default function declareUserRoutes(app: Express) {
   app.get("/user/:id", authToken, async (req, res) => {
-    const { id } = req.params;
-    if (!id)
-      return res.status(400).send({
-        ok: false,
-        message: "Missing parameters",
-      });
+    try {
+      const parsed = userId.safeParse(req.params.id);
+      if (!parsed.success) {
+        throw {
+          status: 400,
+          message: "Invalid user id",
+        };
+      }
+      const id = parsed.data;
+      console.log(id);
 
-    const userId = parseInt(id);
-    if (!userId)
-      return res.status(400).send({
-        ok: false,
-        message: "Invalid parameters",
-      });
-
-    await prisma.user
-      .findUnique({
+      const user = await prisma.user.findUnique({
         where: {
-          id: userId,
+          id: id,
         },
         select: {
           pseudo: true,
           firstName: true,
           lastActivity: true,
         },
-      })
-      .then((user: any) => {
-        if (!user)
-          return res.status(404).send({
-            ok: false,
-            message: "User not found",
-          });
-        return res.status(200).send({
-          ok: true,
-          message: "User found",
-          user,
-        });
-      })
-      .catch((err: any) => {
-        res.status(500).send({
-          ok: false,
-          message: "Error while getting user",
-          error: err,
-        });
       });
+
+      if (!user) {
+        throw {
+          status: 404,
+          message: "User not found",
+        };
+      }
+
+      res.status(200).send({
+        ok: true,
+        message: "User found",
+        user,
+      });
+    } catch (error: any) {
+      const status = error.status || 500;
+      const message = error.message || "Error while getting user";
+      res.status(status).send({
+        ok: false,
+        message: message,
+      });
+    }
   });
 
   app.post("/user", async (req, res) => {
-    const { pseudo, firstName, email, password } = req.body;
-
-    if (!pseudo || !firstName || !email || !password)
-      return res.status(400).send({
-        ok: false,
-        message:
-          "Missing parameters : (pseudo, firstName, email, password) required",
-      });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
-
-    await prisma.user
-      .create({
+    try {
+      const parsed = createUserObject.safeParse(req.body);
+      if (!parsed.success) {
+        throw {
+          status: 400,
+          message: parsed.error.message,
+        };
+      }
+      const { pseudo, firstName, email, password } = parsed.data;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await prisma.user.create({
         data: {
           pseudo,
           firstName,
@@ -74,110 +90,78 @@ export default function declareUserRoutes(app: Express) {
           status: "active",
           lastActivity: new Date(),
         },
-      })
-      .then((user: any) => {
-        const token = createToken(user.id);
-        res.status(201).send({
-          ok: true,
-          message: "User created",
-          user: user,
-          token: token,
-        });
-      })
-      .catch((err: any) => {
-        res.status(500).send({
-          ok: false,
-          message: "Error while creating user",
-          error: err,
-        });
       });
+      if (!user) {
+        throw {
+          status: 500,
+          message: "Error while creating user",
+        };
+      }
+      const token = createToken(user.id);
+      res.status(201).send({
+        ok: true,
+        message: "User created",
+        user: user,
+        token: token,
+      });
+    } catch (error: any) {
+      const status = error.status || 500;
+      const message = error.message || "Error while creating user";
+      res.status(status).send({
+        ok: false,
+        message: message,
+      });
+    }
   });
 
   app.put("/user", authToken, async (req, res) => {
-    const userId = res.locals.userId;
-    const { pseudo, firstName, password } = req.body;
-    if (!pseudo && !firstName && !password)
-      return res.status(400).send({
-        ok: false,
-        message: "Missing parameters : (pseudo, firstName, password) required",
+    try {
+      const userId = res.locals.userId;
+      const parsed = updateUserObject.safeParse(req.body);
+      if (!parsed.success) {
+        throw {
+          status: 400,
+          message: parsed.error.message,
+        };
+      }
+      const { pseudo, firstName, password } = parsed.data;
+      const dataToUpdate: any = {};
+
+      if (pseudo) {
+        dataToUpdate.pseudo = pseudo;
+      }
+      if (firstName) {
+        dataToUpdate.firstName = firstName;
+      }
+      if (password) {
+        dataToUpdate.password = await bcrypt.hash(password, 10);
+      }
+
+      const user = await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: dataToUpdate,
       });
 
-    if (pseudo) {
-      await prisma.user
-        .update({
-          where: {
-            id: userId,
-          },
-          data: {
-            pseudo,
-          },
-        })
-        .then((user: any) => {
-          res.status(200).send({
-            ok: true,
-            message: "User updated",
-            user: user,
-          });
-        })
-        .catch((err: any) => {
-          res.status(500).send({
-            ok: false,
-            message: "Error while updating user",
-            error: err,
-          });
-        });
-    } else if (firstName) {
-      await prisma.user
-        .update({
-          where: {
-            id: userId,
-          },
-          data: {
-            firstName,
-          },
-        })
-        .then((user: any) => {
-          res.status(200).send({
-            ok: true,
-            message: "User updated",
-            user: user,
-          });
-        })
-        .catch((err: any) => {
-          res.status(500).send({
-            ok: false,
-            message: "Error while updating user",
-            error: err,
-          });
-        });
-    } else if (password) {
-      await prisma.user
-        .update({
-          where: {
-            id: userId,
-          },
-          data: {
-            password: await bcrypt.hash(password, 10),
-          },
-        })
-        .then((user: any) => {
-          res.status(200).send({
-            ok: true,
-            message: "User updated",
-            user: user,
-          });
-        })
-        .catch((err: any) => {
-          res.status(500).send({
-            ok: false,
-            message: "Error while updating user",
-            error: err,
-          });
-        });
-    } else {
-      return res.status(400).send({
+      if (!user) {
+        throw {
+          status: 500,
+          message: "Error while updating user",
+        };
+      }
+
+      res.status(200).send({
+        ok: true,
+        message: "User updated",
+        user: user,
+      });
+    } catch (error: any) {
+      const status = error.status || 500;
+      const message = error.message || "Error while updating user";
+      res.status(status).send({
         ok: false,
-        message: "Missing parameters : (pseudo, firstName, password) required",
+        message: message,
       });
     }
   });
