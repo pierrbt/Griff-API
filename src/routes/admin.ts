@@ -3,9 +3,9 @@ import { authAdmin, prisma } from "../middleware";
 import { z } from "zod";
 
 const banUserId = z.coerce.number().positive("User id must be positive").int();
-const newPseudo = z
-  .string()
-  .min(3, "Pseudo must be at least 3 characters long");
+// const newPseudo = z
+//   .string()
+//   .min(3, "Pseudo must be at least 3 characters long");
 
 export default function declareAdminRoutes(app: Express) {
   app.post("/ban/:id", authAdmin, async (req, res) => {

@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import declareAuthRoutes from "./routes/auth";
 import declareUserRoutes from "./routes/user";
 import declareGamesRoutes from "./routes/games";
