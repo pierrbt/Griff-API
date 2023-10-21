@@ -67,6 +67,8 @@ Welcome to the Griff's API, a backend service for a game launcher application. T
 
 ## Todo
 
+- [ ] Enhance routes naming convention.
+- [ ] Add Zod for request validation.
 - [ ] Add admin endpoints for admin user management.
 - [ ] Add endpoint for game creation and update operations.
 - [ ] Implement admin authentication middleware for protected routes.
