@@ -1,7 +1,7 @@
 import { Express } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../tokens";
-import { prisma, authToken } from "../middleware";
+import { prisma, authToken, authAdmin } from "../middleware";
 import {
   createUserObject,
   updateUserObject,
@@ -9,6 +9,41 @@ import {
 } from "../validators/user.validator";
 
 export default function declareUserRoutes(app: Express) {
+  app.get("/users", authAdmin, async (req, res) => {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          pseudo: true,
+          firstName: true,
+          email: true,
+          status: true,
+          lastActivity: true,
+          createdAt: true,
+          admin: true,
+        },
+      });
+      if (!users) {
+        throw {
+          status: 500,
+          message: "Error while getting users",
+        };
+      }
+      res.status(200).send({
+        ok: true,
+        message: "Users found",
+        users: users,
+      });
+    } catch (error: any) {
+      const status = error.status || 500;
+      const message = error.message || "Error while getting users";
+      res.status(status).send({
+        ok: false,
+        message: message,
+      });
+    }
+  });
+
   app.get("/users/:id", authToken, async (req, res) => {
     try {
       const parsed = userIdParameter.safeParse(req.params.id);
