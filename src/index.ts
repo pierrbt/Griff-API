@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import declareAuthRoutes from "./routes/auth";
 import declareUserRoutes from "./routes/user";
 import declareGamesRoutes from "./routes/games";
@@ -38,7 +38,20 @@ declareUserRoutes(app);
 declareGamesRoutes(app);
 
 app.all("/", (req, res) => {
-  res.send("Welcome to the Griff's API");
+  res.send({
+    ok: true,
+    message: "Welcome on the Griff's API",
+    routes: app._router.stack
+      .filter((r: any) => r.route)
+      .map((r: any) => r.route.path),
+  });
+});
+
+app.all("*", (req, res) => {
+  res.status(404).send({
+    ok: false,
+    message: "Route not found",
+  });
 });
 
 app.listen(port, function () {
