@@ -11,6 +11,9 @@ export async function updateLastActivity(
 ) {
   const token = req.headers.authorization;
   const [authId, message] = await checkAndVerifyToken(token);
+
+  next();
+
   if (authId) {
     prisma.user.update({
       where: {
@@ -19,9 +22,9 @@ export async function updateLastActivity(
       data: {
         lastActivity: new Date(),
       },
-    });
+    }).then(() => { });
   }
-  next();
+
 }
 
 export async function authToken(
