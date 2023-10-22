@@ -6,7 +6,7 @@ import { z } from "zod";
 
 const loginUserObject = z.object({
   pseudo: z.string().min(3, "Pseudo must be at least 3 characters long"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
 export default function declareAuthRoutes(app: Express) {
