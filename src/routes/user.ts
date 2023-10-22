@@ -1,7 +1,7 @@
 import { Express } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../tokens";
-import { prisma, authToken, authAdmin } from "../middleware";
+import { prisma, authUser, authAdmin } from "../middleware";
 import {
   createUserObject,
   updateUserObject,
@@ -44,7 +44,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.get("/users/:id", authToken, async (req, res) => {
+  app.get("/users/:id", authUser, async (req, res) => {
     try {
       const parsed = userIdParameter.safeParse(req.params.id);
       if (!parsed.success) {
@@ -133,7 +133,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.put("/users", authToken, async (req, res) => {
+  app.put("/users", authUser, async (req, res) => {
     try {
       const userId = res.locals.userId;
       const parsed = updateUserObject.safeParse(req.body);
@@ -185,7 +185,7 @@ export default function declareUserRoutes(app: Express) {
     }
   });
 
-  app.delete("/users", authToken, async (req, res) => {
+  app.delete("/users", authUser, async (req, res) => {
     const userId = res.locals.userId;
 
     await prisma.user

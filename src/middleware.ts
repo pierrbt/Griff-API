@@ -27,7 +27,7 @@ export async function updateLastActivity(
 
 }
 
-export async function authToken(
+export async function authUser(
   req: Request,
   res: Response,
   next: NextFunction,

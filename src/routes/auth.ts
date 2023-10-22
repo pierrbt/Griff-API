@@ -1,7 +1,7 @@
 import { Express } from "express";
 import bcrypt from "bcrypt";
 import { createToken } from "../tokens";
-import { prisma, authToken } from "../middleware";
+import { prisma, authUser } from "../middleware";
 import { z } from "zod";
 
 const loginUserObject = z.object({
@@ -51,7 +51,7 @@ export default function declareAuthRoutes(app: Express) {
     }
   });
 
-  app.post("/user/verify", authToken, async (req, res) => {
+  app.post("/user/verify", authUser, async (req, res) => {
     try {
       const userId = res.locals.userId;
       const user = await prisma.user.findUnique({

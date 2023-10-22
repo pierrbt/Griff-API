@@ -1,14 +1,14 @@
 import { Express } from "express";
-import { prisma, authToken, authAdmin } from "../middleware";
+import { prisma, authUser, authAdmin } from "../middleware";
 import {
   gameIdParameter,
   createGameObject,
 } from "../validators/games.validator";
 
 export default function declareGamesRoutes(app: Express) {
-  app.get("/games", authToken, async (req, res) => {
+  app.get("/games", authUser, async (req, res) => {
     try {
-      const games = await prisma.game.findMany({include: {props: true}});
+      const games = await prisma.game.findMany({ include: { props: true } });
       if (!games) {
         throw {
           status: 404,
@@ -30,7 +30,7 @@ export default function declareGamesRoutes(app: Express) {
     }
   });
 
-  app.get("/games/:id", authToken, async (req, res) => {
+  app.get("/games/:id", authUser, async (req, res) => {
     try {
       const parsed = gameIdParameter.safeParse(req.params.id);
       if (!parsed.success) {
@@ -46,7 +46,7 @@ export default function declareGamesRoutes(app: Express) {
         where: {
           id: id,
         },
-        include: {props: true}
+        include: { props: true },
       });
 
       if (!game) {
