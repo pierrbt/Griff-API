@@ -51,7 +51,7 @@ export default function declareAuthRoutes(app: Express) {
     }
   });
 
-  app.post("/user/verify", authUser, async (req, res) => {
+  app.post("/token", authUser, async (req, res) => {
     try {
       const userId = res.locals.userId;
       const user = await prisma.user.findUnique({
